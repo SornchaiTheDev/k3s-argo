@@ -1,5 +1,5 @@
 {
-  newService(name, image, host=null, replicas=1, containerPort=3000, servicePort=80): {
+  newService(name, image, host=null, replicas=1, containerPort=3000, servicePort=80, entrypoints=['web', 'websecure']): {
     deployment: {
       apiVersion: 'apps/v1',
       kind: 'Deployment',
@@ -28,18 +28,19 @@
         ports: [{ port: servicePort, targetPort: containerPort }],
       },
     },
-    // Only generate Ingress if a host is provided
-    [if host != null then 'ingress']: {
+    [if host != null then "ingress"]: {
       apiVersion: 'networking.k8s.io/v1',
       kind: 'Ingress',
       metadata: {
         name: name,
         annotations: {
-          'kubernetes.io/ingress.class': 'traefik',
-          'traefik.ingress.kubernetes.io/router.entrypoints': 'web',
+          // Join the list of entrypoints into a comma-separated string for Traefik
+          'traefik.ingress.kubernetes.io/router.entrypoints': std.join(',', entrypoints),
         },
       },
       spec: {
+        // Traefik v3 standard: explicit Ingress Class Name
+        ingressClassName: 'traefik',
         rules: [
           {
             host: h,
@@ -56,7 +57,6 @@
               }],
             },
           }
-          // This loop creates a rule for every host in the list
           for h in (if std.isString(host) then [host] else host)
         ],
       },
