@@ -1,9 +1,10 @@
 local base = import '../lib/service-template.jsonnet';
 
-base.newService(
-  'portfolio-2026',
-  'sornchaithedev/portfolio-2026',
-  1,
-  3000
-)
+local app = base.newService(
+  name='portfolio-2026',
+  image='sornchaithedev/portfolio-2026:latest',
+  host='sornchai.com',
+  containerPort=3000,
+);
 
+std.objectValues(app)
