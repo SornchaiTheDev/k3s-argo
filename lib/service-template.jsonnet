@@ -29,7 +29,7 @@
       },
     },
     // Only generate Ingress if a host is provided
-    [if host != null then "ingress"]: {
+    [if host != null then 'ingress']: {
       apiVersion: 'networking.k8s.io/v1',
       kind: 'Ingress',
       metadata: {
@@ -40,21 +40,25 @@
         },
       },
       spec: {
-        rules: [{
-          host: host,
-          http: {
-            paths: [{
-              path: '/',
-              pathType: 'Prefix',
-              backend: {
-                service: {
-                  name: name,
-                  port: { number: servicePort },
+        rules: [
+          {
+            host: h,
+            http: {
+              paths: [{
+                path: '/',
+                pathType: 'Prefix',
+                backend: {
+                  service: {
+                    name: name,
+                    port: { number: servicePort },
+                  },
                 },
-              },
-            }],
-          },
-        }],
+              }],
+            },
+          }
+          // This loop creates a rule for every host in the list
+          for h in (if std.isString(host) then [host] else host)
+        ],
       },
     },
   },
